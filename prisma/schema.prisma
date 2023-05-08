@@ -1,0 +1,58 @@
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = "5"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root@localhost:3306/tdm_serbili"
+}
+
+model restaurant {
+  id_resto          Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(100)
+  rating            Int
+  location          String              @db.VarChar(100)
+  image             String              @db.VarChar(200)
+  facebook_url      String              @db.VarChar(200)
+  instagram_url     String              @db.VarChar(200)
+  phone             String              @db.VarChar(13)
+  type              Int?
+  longitude         Float               @db.Float
+  latitude          Float               @db.Float
+  rating_restaurant rating_restaurant[]
+  type_resto        type_resto?         @relation(fields: [type], references: [id_type], onDelete: Restrict, onUpdate: Restrict, map: "restaurant_ibfk_1")
+
+  @@index([type], map: "type")
+}
+
+model type_resto {
+  id_type    Int          @id @default(autoincrement())
+  nom        String       @db.VarChar(20)
+  restaurant restaurant[]
+}
+
+model user {
+  id_user           Int                 @id @default(autoincrement())
+  first_name        String              @db.VarChar(50)
+  last_name         String              @db.VarChar(50)
+  phone             String              @db.VarChar(13)
+  address           String              @db.VarChar(100)
+  password          String              @db.VarChar(100)
+  mail              String              @db.VarChar(50)
+  profile_pic       String?             @db.VarChar(100)
+  username          String              @unique(map: "username") @db.VarChar(100)
+  rating_restaurant rating_restaurant[]
+}
+
+model rating_restaurant {
+  id_user       Int
+  id_restaurant Int
+  rating        Int
+  comment       String?    @db.Text
+  restaurant    restaurant @relation(fields: [id_restaurant], references: [id_resto], onUpdate: Restrict, map: "rating_restaurant_ibfk_1")
+  user          user       @relation(fields: [id_user], references: [id_user], onUpdate: Restrict, map: "rating_restaurant_ibfk_2")
+
+  @@id([id_restaurant, id_user])
+  @@index([id_user], map: "id_user")
+}
