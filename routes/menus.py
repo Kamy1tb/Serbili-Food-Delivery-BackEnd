@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from prisma import Prisma
-
+from pydantic import BaseModel
 router = APIRouter()
 
 prisma = Prisma()
@@ -26,7 +26,8 @@ async def shutdown():
     await prisma.disconnect()
 
 
-
+class Id_resto(BaseModel):
+    id_resto:int
 @router.get("/menuByID")
 async def restaurantByID(id_resto:int):
     menu = await prisma.menu.find_many(    

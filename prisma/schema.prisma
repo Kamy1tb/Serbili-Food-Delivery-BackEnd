@@ -64,6 +64,7 @@ model menu {
   prix          Int
   id_restaurant Int
   id_type_menu  Int
+  image         String?    @db.VarChar(999)
   restaurant    restaurant @relation(fields: [id_restaurant], references: [id_resto], onDelete: Cascade, map: "menu_ibfk_1")
   type_menu     type_menu  @relation(fields: [id_type_menu], references: [id_type_menu], onDelete: Cascade, map: "menu_ibfk_2")
 
