@@ -5,13 +5,12 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root@localhost:3306/tdm_serbili"
+  url      = "mysql://fgqnfdxm_kamyl:3MHYhXMEf3j7DVm@178.32.109.176:3306/fgqnfdxm_TDM_Serbili"
 }
 
 model restaurant {
   id_resto          Int                 @id @default(autoincrement())
   name              String              @db.VarChar(100)
-  rating            Int
   location          String              @db.VarChar(100)
   image             String              @db.VarChar(200)
   facebook_url      String              @db.VarChar(200)
@@ -20,6 +19,7 @@ model restaurant {
   type              Int?
   longitude         Float               @db.Float
   latitude          Float               @db.Float
+  menu              menu[]
   rating_restaurant rating_restaurant[]
   type_resto        type_resto?         @relation(fields: [type], references: [id_type], onDelete: Restrict, onUpdate: Restrict, map: "restaurant_ibfk_1")
 
@@ -50,9 +50,29 @@ model rating_restaurant {
   id_restaurant Int
   rating        Int
   comment       String?    @db.Text
-  restaurant    restaurant @relation(fields: [id_restaurant], references: [id_resto], onUpdate: Restrict, map: "rating_restaurant_ibfk_1")
-  user          user       @relation(fields: [id_user], references: [id_user], onUpdate: Restrict, map: "rating_restaurant_ibfk_2")
+  restaurant    restaurant @relation(fields: [id_restaurant], references: [id_resto], onDelete: Cascade, map: "rating_restaurant_ibfk_1")
+  user          user       @relation(fields: [id_user], references: [id_user], onDelete: Cascade, map: "rating_restaurant_ibfk_2")
 
   @@id([id_restaurant, id_user])
   @@index([id_user], map: "id_user")
+}
+
+model menu {
+  id_menu       Int        @id @default(autoincrement())
+  nom           String     @db.VarChar(100)
+  description   String?    @db.VarChar(100)
+  prix          Int
+  id_restaurant Int
+  id_type_menu  Int
+  restaurant    restaurant @relation(fields: [id_restaurant], references: [id_resto], onDelete: Cascade, map: "menu_ibfk_1")
+  type_menu     type_menu  @relation(fields: [id_type_menu], references: [id_type_menu], onDelete: Cascade, map: "menu_ibfk_2")
+
+  @@index([id_restaurant], map: "id_restaurant")
+  @@index([id_type_menu], map: "id_type_menu")
+}
+
+model type_menu {
+  id_type_menu Int    @id @default(autoincrement())
+  nom          String @db.VarChar(100)
+  menu         menu[]
 }

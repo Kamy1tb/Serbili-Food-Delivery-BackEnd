@@ -25,34 +25,16 @@ async def startup():
 async def shutdown():
     await prisma.disconnect()
 
-    
-@router.get("/restaurants")
-async def read_restaurants():
-    restaurants = await prisma.restaurant.find_many(       
-        include={
-    "type_resto": True,
-    })
 
-    return restaurants
 
-@router.get("/restaurantByID")
+@router.get("/menuByID")
 async def restaurantByID(id_resto:int):
-    restaurants = await prisma.restaurant.find_first(    
+    menu = await prisma.menu.find_many(    
         where={
-            "id_resto": id_resto
+            "id_restaurant": id_resto
         },    
         include={
-    "type_resto": True,
-    "rating_restaurant": True
+    "type_menu": True,
+    
     })
-    return restaurants
-
-@router.get("/ratingRestaurants")
-async def rating_restaurants():
-    ratings = await prisma.rating_restaurant.group_by(
-        by= ["id_restaurant"],
-        avg={
-            "rating":True
-        },
-    )
-    return ratings
+    return menu

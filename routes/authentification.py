@@ -1,9 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends,APIRouter
+from fastapi import FastAPI, HTTPException, Depends,APIRouter, Form
 from prisma import Prisma
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
+from typing import Any
 import secrets
 import string
 import bcrypt
@@ -23,10 +25,10 @@ def verify_password(plain_password, hashed_password):
 
 async def authenticate_user(username: str, password: str):
     user =  await prisma.user.find_unique(where={"username": username})
-    hashed_password = bcrypt.hashpw(user.password.encode(), bcrypt.gensalt())
+   
     if not user:
         return False
-    if not bcrypt.checkpw(password.encode(), hashed_password):
+    if not bcrypt.checkpw(password.encode(), user.password.encode()): 
         return False
     del user.password
     return user
@@ -52,10 +54,16 @@ async def startup():
 async def shutdown():
     await prisma.disconnect()
 
-    
+
+class SignIn(BaseModel):
+    username: str
+    password: str
+
 @router.post("/login")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(form_data.username, form_data.password)
+
+async def login(user : SignIn):
+    
+    user = await authenticate_user(user.username, user.password)
     if not user:
         raise HTTPException(
             status_code=400,
@@ -64,3 +72,32 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         )
     
     return user
+
+class SignUp(BaseModel):
+    email: str
+    username: str
+    password: str
+    firstname: str
+    lastname: str
+    phone: str
+    address: str
+    profile_pic: str
+
+
+
+
+@router.post("/signup")
+async def signup(user: SignUp):
+    created = await prisma.user.create(
+        {
+            "mail": user.email,
+            "username": user.username,
+            "password": bcrypt.hashpw(user.password.encode(), bcrypt.gensalt()).decode(),
+            "first_name": user.firstname,
+            "last_name": user.lastname,
+            "address": user.address,
+            "phone": user.phone,
+            "profile_pic": user.profile_pic
+        }
+    )
+    return {"created": user.username}
