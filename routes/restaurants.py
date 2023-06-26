@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from prisma import Prisma
-
+import json
 router = APIRouter()
 
 prisma = Prisma()
@@ -31,7 +31,24 @@ async def read_restaurants():
     restaurants = await prisma.restaurant.find_many(       
         include={
     "type_resto": True,
+    "rating_restaurant" : True
     })
+
+    
+
+    ratings = await prisma.rating_restaurant.group_by(
+        by= ["id_restaurant"],
+        avg={
+            "rating":True
+        },
+    )
+
+    for resto in restaurants:
+        resto.rating_restaurant = 0
+        for rating in ratings:
+            if resto.id_resto == rating["id_restaurant"]:
+                resto.rating_restaurant = rating["_avg"]["rating"]
+           
 
     return restaurants
 
@@ -56,3 +73,15 @@ async def rating_restaurants():
         },
     )
     return ratings
+
+@router.get("/ratingRestaurant")
+async def rating_restaurant(id_resto:int):
+    rating = await prisma.rating_restaurant.group_by(
+        by= ["id_restaurant"],
+        where={"id_restaurant": id_resto}
+        ,
+        avg={
+            "rating":True
+        }
+    )
+    return rating

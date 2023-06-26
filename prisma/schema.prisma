@@ -12,13 +12,14 @@ model restaurant {
   id_resto          Int                 @id @default(autoincrement())
   name              String              @db.VarChar(100)
   location          String              @db.VarChar(100)
-  image             String              @db.VarChar(200)
+  image             String              @db.VarChar(999)
   facebook_url      String              @db.VarChar(200)
   instagram_url     String              @db.VarChar(200)
   phone             String              @db.VarChar(13)
   type              Int?
   longitude         Float               @db.Float
   latitude          Float               @db.Float
+  commande          commande[]
   menu              menu[]
   rating_restaurant rating_restaurant[]
   type_resto        type_resto?         @relation(fields: [type], references: [id_type], onDelete: Restrict, onUpdate: Restrict, map: "restaurant_ibfk_1")
@@ -40,8 +41,9 @@ model user {
   address           String              @db.VarChar(100)
   password          String              @db.VarChar(100)
   mail              String              @db.VarChar(50)
-  profile_pic       String?             @db.VarChar(100)
+  profile_pic       String?             @db.VarChar(999)
   username          String              @unique(map: "username") @db.VarChar(100)
+  commande          commande[]
   rating_restaurant rating_restaurant[]
 }
 
@@ -58,15 +60,16 @@ model rating_restaurant {
 }
 
 model menu {
-  id_menu       Int        @id @default(autoincrement())
-  nom           String     @db.VarChar(100)
-  description   String?    @db.VarChar(100)
+  id_menu       Int            @id @default(autoincrement())
+  nom           String         @db.VarChar(100)
+  description   String?        @db.VarChar(100)
   prix          Int
   id_restaurant Int
   id_type_menu  Int
-  image         String?    @db.VarChar(999)
-  restaurant    restaurant @relation(fields: [id_restaurant], references: [id_resto], onDelete: Cascade, map: "menu_ibfk_1")
-  type_menu     type_menu  @relation(fields: [id_type_menu], references: [id_type_menu], onDelete: Cascade, map: "menu_ibfk_2")
+  image         String?        @db.VarChar(999)
+  commandeItem  commandeItem[]
+  restaurant    restaurant     @relation(fields: [id_restaurant], references: [id_resto], onDelete: Cascade, map: "menu_ibfk_1")
+  type_menu     type_menu      @relation(fields: [id_type_menu], references: [id_type_menu], onDelete: Cascade, map: "menu_ibfk_2")
 
   @@index([id_restaurant], map: "id_restaurant")
   @@index([id_type_menu], map: "id_type_menu")
@@ -76,4 +79,30 @@ model type_menu {
   id_type_menu Int    @id @default(autoincrement())
   nom          String @db.VarChar(100)
   menu         menu[]
+}
+
+model commande {
+  id_commande  Int            @id @default(autoincrement())
+  id_resto     Int
+  id_user      Int
+  date         DateTime       @db.DateTime(0)
+  total        Float          @db.Float
+  valider      Int
+  restaurant   restaurant     @relation(fields: [id_resto], references: [id_resto], onDelete: Cascade, map: "c1")
+  user         user           @relation(fields: [id_user], references: [id_user], onDelete: Cascade, map: "c2")
+  commandeItem commandeItem[]
+
+  @@index([id_resto], map: "c1")
+  @@index([id_user], map: "c2")
+}
+
+model commandeItem {
+  id_commande Int
+  id_item     Int
+  quantite    Int
+  commande    commande @relation(fields: [id_commande], references: [id_commande], onDelete: Cascade, map: "c11")
+  menu        menu     @relation(fields: [id_item], references: [id_menu], onDelete: Cascade, map: "c22")
+
+  @@id([id_commande, id_item])
+  @@index([id_item], map: "c22")
 }

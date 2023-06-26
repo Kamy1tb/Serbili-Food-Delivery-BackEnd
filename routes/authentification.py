@@ -25,7 +25,7 @@ def verify_password(plain_password, hashed_password):
 
 async def authenticate_user(username: str, password: str):
     user =  await prisma.user.find_unique(where={"username": username})
-   
+    
     if not user:
         return False
     if not bcrypt.checkpw(password.encode(), user.password.encode()): 
@@ -100,4 +100,5 @@ async def signup(user: SignUp):
             "profile_pic": user.profile_pic
         }
     )
-    return {"created": user.username}
+    user = await authenticate_user(user.username,user.password)
+    return user
