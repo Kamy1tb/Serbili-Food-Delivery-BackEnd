@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://fgqnfdxm_kamyl:3MHYhXMEf3j7DVm@178.32.109.176:3306/fgqnfdxm_TDM_Serbili"
+  url      = "url"
 }
 
 model restaurant {
